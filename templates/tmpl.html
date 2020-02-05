@@ -66,21 +66,21 @@
         A4 size: 210 by 297 millimiters
     -->
     <style type="text/css">
-      html {
+      /* html {
         background-color: #525659;
         padding: 50px;
-      }
+      } */
       body {
         background-color: white;
         width: 8.5in;
-        height: 11in;
+        /* height: 11in; */
         margin-left: auto;
         margin-right: auto;
         margin-top: 0;
         margin-bottom: 0;
-        font-family:  'Source Sans Pro', sans-serif;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-weight: 400;
         color: #3E3E3E;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.8);
       }
       @media print {
         html {
@@ -250,6 +250,12 @@
         clear: both;
         float: left;
       }
+      ul.entry-detail {
+        margin-block-start: 0.25em;
+      }
+      li.entry-detail {
+        text-align: justify;
+      }
     </style>
     <!-- Page title -->
     <title>{{.Name}} - Resume</title>
@@ -327,10 +333,14 @@
                   {{- with .Description}}
                     <span class="entry-description">{{.}}</span>
                   {{- end}}
-                  {{- range .Details}}
-                    <span class="entry-detail">
-                      <span>- {{.}}</span>
-                    </span>
+                  {{- with .Details }}
+                  <ul class="entry-detail">
+                  {{- range . }}
+                    <li class="entry-detail">
+                      {{.}}
+                    </li>
+                  {{- end}}
+                  </ul>
                   {{- end}}
                 </div>
               {{- end}}
