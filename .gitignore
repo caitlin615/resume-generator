@@ -3,3 +3,4 @@ resume.yaml
 output/resume.*
 *.PID
 chromedriver.log
+resume-generator
