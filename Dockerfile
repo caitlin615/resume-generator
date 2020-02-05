@@ -13,10 +13,9 @@ RUN curl -SLO "https://chromedriver.storage.googleapis.com/$(curl -s https://chr
 
 ENV CHROME_DRIVER_BINARY_PATH /usr/local/bin/chromedriver
 ENV CHROME_BINARY_PATH /usr/bin/chromium
+ENV TEMPLATE_ROOT /go/src/github.com/caitlin615/resume-generator/templates
 
-ENV GOPATH /go
-WORKDIR /go/src/github.com/caitlin615/resume-generator
-COPY . ./
-RUN go get -v ./...
+COPY . /go/src/github.com/caitlin615/resume-generator/
+RUN cd /go/src/github.com/caitlin615/resume-generator && go get -v ./... && go install
 
-ENTRYPOINT ["go", "run", "main.go"]
+ENTRYPOINT ["resume-generator"]
