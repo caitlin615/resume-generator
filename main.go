@@ -150,8 +150,10 @@ func (j JSONExporter) SaveAs(r *Resume) (outputPath string, err error) {
 	return
 }
 
+var TemplateRoot = getEnvDefault("TEMPLATE_ROOT", "templates")
+
 func (d DefaultExporter) SaveAs(r *Resume) (outputPath string, err error) {
-	templatePath := "templates/tmpl" + d.Extension
+	templatePath := TemplateRoot + "/tmpl" + d.Extension
 	outputPath = "output/" + r.ResumeName + d.Extension
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
@@ -167,4 +169,11 @@ func (d DefaultExporter) SaveAs(r *Resume) (outputPath string, err error) {
 		return "", fmt.Errorf("Execute template (%s) failed\n%s", templatePath, err)
 	}
 	return
+}
+
+func getEnvDefault(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
