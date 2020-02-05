@@ -8,6 +8,10 @@ FIRST_DEPENDENCY = $<
 build:
 	docker build --rm -t resume-generator .
 
+push: build
+	docker tag resume-generator celfring/resume-generator
+	docker push celfring/resume-generator
+
 output/resume.html: resume.yaml
 	docker run --rm -it -v `pwd`:/go/src/github.com/caitlin615/resume-generator resume-generator -resume=$(FIRST_DEPENDENCY)
 
