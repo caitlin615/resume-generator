@@ -136,6 +136,9 @@ type DefaultExporter struct {
 type JSONExporter struct{}
 
 func (j JSONExporter) SaveAs(r *Resume) (outputPath string, err error) {
+	if _, err = os.Stat("output"); os.IsNotExist(err) {
+		os.Mkdir("output", os.ModeDir)
+	}
 	outputPath = "output/" + r.ResumeName + ".json"
 	outputFile, err := os.Create(outputPath)
 	if err != nil {
