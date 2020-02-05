@@ -1,164 +1,18 @@
-package main
+package pdf
 
 import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
-	"text/template"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
-	yaml "gopkg.in/yaml.v2"
 )
-
-func main() {
-	var err error
-
-	// Flags
-	var resumePath = flag.String("resume", "example.yaml", "Path to the resume YAML file")
-	var browserRemote = flag.String("browser", "http://127.0.0.1:9222", "Remote instance of the browser (to print the resume as PDF)")
-	var templatesPath = flag.String("templates", "templates/tmpl", "Path to the output templates (everything except the file extension)")
-	var outputPath = flag.String("output", "output/example", "Path to the output files (everything except the file extension)")
-	flag.Parse()
-
-	// Load resume
-	r, err := loadResume(*resumePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Templates extensions
-	// There must exist a template named TemplatesPath+Extension for each extension
-	var templatesExtensions = [...]string{".html", ".md", ".txt", ".xml"}
-
-	// Save resume using the templates
-	for _, extension := range templatesExtensions {
-		err = r.saveAs((*outputPath)+extension, (*templatesPath)+extension)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// Save resume as JSON
-	err = r.saveAsJSON(*outputPath + ".json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Save resume as PDF
-	err = saveHTMLAsPDF(*browserRemote, *outputPath+".html", *outputPath+".pdf", defaultPrintToPDFParams())
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-//
-// Resume structure
-//
-
-// Resume format
-type Resume struct {
-	Name     string    `json:",omitempty"`
-	Title    string    `json:",omitempty"`
-	Contact  Contact   `json:",omitempty"`
-	Summary  string    `json:",omitempty"`
-	Sections []Section `json:",omitempty"`
-}
-
-// Contact section
-type Contact struct {
-	Phone    string `json:",omitempty"`
-	Address  string `json:",omitempty"`
-	Email    string `json:",omitempty"`
-	Webpage  Link   `json:",omitempty"`
-	Linkedin Link   `json:",omitempty"`
-	Github   Link   `json:",omitempty"`
-}
-
-// Link to URL
-type Link struct {
-	Name string `json:",omitempty"`
-	URL  string `json:",omitempty"`
-}
-
-// Section of the resume
-type Section struct {
-	Name    string  `json:",omitempty"`
-	Entries []Entry `json:",omitempty"`
-}
-
-// Entry of a section
-type Entry struct {
-	What        string   `json:",omitempty"`
-	URL         string   `json:",omitempty"`
-	Where       string   `json:",omitempty"`
-	When        string   `json:",omitempty"`
-	Location    string   `json:",omitempty"`
-	Description string   `json:",omitempty"`
-	Details     []string `json:",omitempty"`
-}
-
-//
-// Load from YAML
-//
-
-func loadResume(yamlPath string) (*Resume, error) {
-	yamlFile, err := ioutil.ReadFile(yamlPath)
-	if err != nil {
-		return nil, fmt.Errorf("Open input YAML (%s) failed\n%s", yamlPath, err)
-	}
-	resume := Resume{}
-	err = yaml.Unmarshal(yamlFile, &resume)
-	if err != nil {
-		return nil, fmt.Errorf("Read input YAML (%s) failed\n%s", yamlPath, err)
-	}
-	return &resume, nil
-}
-
-//
-// Save using a template
-//
-
-func (r *Resume) saveAs(outputPath string, templatePath string) error {
-	tmpl, err := template.ParseFiles(templatePath)
-	if err != nil {
-		return fmt.Errorf("Parse template file (%s) failed\n%s", templatePath, err)
-	}
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		return fmt.Errorf("Open output file (%s) failed\n%s", outputPath, err)
-	}
-	defer outputFile.Close()
-	err = tmpl.Execute(outputFile, *r)
-	if err != nil {
-		return fmt.Errorf("Execute template (%s) failed\n%s", templatePath, err)
-	}
-	return nil
-}
-
-//
-// Save as JSON
-//
-
-func (r *Resume) saveAsJSON(outputPath string) error {
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		return fmt.Errorf("Open output file (%s) failed\n%s", outputPath, err)
-	}
-	defer outputFile.Close()
-	output, err := json.MarshalIndent(r, "", "  ")
-	if err != nil {
-		return fmt.Errorf("Write output file (%s) failed\n%s", outputPath, err)
-	}
-	outputFile.Write(output)
-	return nil
-}
 
 //
 // Save as PDF
@@ -219,11 +73,17 @@ func defaultPrintToPDFParams() *printToPDFParams {
 	}
 }
 
-func saveHTMLAsPDF(browserRemote string, inputHTML string, outputPDF string, params *printToPDFParams) error {
+func SaveHTMLAsPDF(inputHTML string) error {
 	var err error
+	params := defaultPrintToPDFParams()
+	chromeDriver, err := startChrome()
+	if err != nil {
+		return err
+	}
+	defer chromeDriver.Stop()
 
 	// Obtain the address of a tab of the remote browser
-	res, err := http.Get(browserRemote + "/json/list")
+	res, err := http.Get(fmt.Sprintf("http://localhost:%s/json/list", ChromePort))
 	if err != nil {
 		return fmt.Errorf("Connect to remote browser failed\n%s", err)
 	}
@@ -280,6 +140,7 @@ func saveHTMLAsPDF(browserRemote string, inputHTML string, outputPDF string, par
 	if err != nil {
 		return fmt.Errorf("Send request to print pdf failed\n%s", err)
 	}
+	outputPDF := strings.TrimSuffix(inputHTML, filepath.Ext(inputHTML)) + ".pdf"
 	err = ioutil.WriteFile(outputPDF, data, 0644)
 	if err != nil {
 		return fmt.Errorf("Write pdf failed\n%s", err)
