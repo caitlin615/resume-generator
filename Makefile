@@ -1,20 +1,15 @@
-BROWSER_REMOTE=(chromium --headless --disable-gpu --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222)
+# Less terse aliases using automatic variables:
+# https://ftp.gnu.org/old-gnu/Manuals/make-3.79.1/html_chapter/make_10.html#SEC101
+TARGET = $@
+FIRST_DEPENDENCY = $<
 
-.PHONY: start stop example resume
+.PHONY: build clean
 
-start:
-	{ ${BROWSER_REMOTE} & echo $$! > remote.PID; }
-	sleep 5
+build:
+	docker build --rm -t resume-generator .
 
-stop:
-	kill `cat remote.PID` && rm remote.PID
+output/resume.html: resume.yaml
+	docker run --rm -it -v `pwd`:/go/src/github.com/caitlin615/resume-generator resume-generator -resume=$(FIRST_DEPENDENCY)
 
-example: start
-	go run resume.go
-	convert -density 500 output/example.pdf output/example.png
-	$(MAKE) stop
-
-resume: start
-	go run resume.go -resume=resume.yaml -output=output/resume
-	convert -density 500 output/resume.pdf output/resume.png
-	$(MAKE) stop
+clean:
+	rm -rf output/resume*

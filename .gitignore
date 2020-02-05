@@ -1,3 +1,5 @@
 *.ps
 resume.yaml
 output/resume.*
+*.PID
+chromedriver.log
