@@ -73,6 +73,7 @@ func defaultPrintToPDFParams() *printToPDFParams {
 	}
 }
 
+// SaveHTMLAsPDF will take a filename of an html file and convert the file into a pdf
 func SaveHTMLAsPDF(inputHTML string) error {
 	var err error
 	params := defaultPrintToPDFParams()
@@ -83,7 +84,7 @@ func SaveHTMLAsPDF(inputHTML string) error {
 	defer chromeDriver.Stop()
 
 	// Obtain the address of a tab of the remote browser
-	res, err := http.Get(fmt.Sprintf("http://localhost:%s/json/list", ChromePort))
+	res, err := http.Get(fmt.Sprintf("http://localhost:%s/json/list", chromePort))
 	if err != nil {
 		return fmt.Errorf("Connect to remote browser failed\n%s", err)
 	}

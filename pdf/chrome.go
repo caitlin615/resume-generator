@@ -8,7 +8,7 @@ import (
 	"github.com/fedesog/webdriver"
 )
 
-var ChromePort = getEnvDefault("CHROME_PORT", "9222")
+var chromePort = getEnvDefault("CHROME_PORT", "9222")
 
 func startChrome() (chromeDriver *webdriver.ChromeDriver, err error) {
 	log.Printf("##### starting chromeDriver")
@@ -32,7 +32,7 @@ func startChrome() (chromeDriver *webdriver.ChromeDriver, err error) {
 				// "ignore-gpu-blacklist",
 				"--disable-dev-shm-usage",
 				"--disable-dev-shm-using",
-				fmt.Sprintf("--remote-debugging-port=%s", ChromePort),
+				fmt.Sprintf("--remote-debugging-port=%s", chromePort),
 				"--headless",
 				"--disable-gpu",
 			},
