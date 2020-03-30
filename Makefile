@@ -13,7 +13,16 @@ push: build
 	docker push celfring/resume-generator
 
 output/resume.html: resume.yaml
-	docker run --rm -it -v `pwd`:/go/src/github.com/caitlin615/resume-generator resume-generator -resume=$(FIRST_DEPENDENCY)
+	@docker run --rm -it \
+		-v `pwd`:/go/src/github.com/caitlin615/resume-generator \
+		-w /go/src/github.com/caitlin615/resume-generator \
+		resume-generator -resume=$(FIRST_DEPENDENCY)
 
 clean:
 	rm -rf output/resume*
+
+example: example.yaml
+	@docker run --rm -it \
+		-v `pwd`:/go/src/github.com/caitlin615/resume-generator \
+		-w /go/src/github.com/caitlin615/resume-generator \
+		resume-generator -resume=$(FIRST_DEPENDENCY)
