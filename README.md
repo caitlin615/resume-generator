@@ -3,6 +3,19 @@
 Generate elegant resumes from a single YAML data file.
 Export them to HTML, JSON, Markdown, PDF, Text and XML.
 
+Prerequisite
+----
+* [Docker](https://docs.docker.com/install/)
+
+Run
+----
+* Make sure your data file is named `resume.yaml`, in the project's root folder (use `example.yaml` as a starting point).
+* Generate the resume by executing
+```
+docker run --rm -v $(pwd):/app -w /app celfring/resume-generator -resume=resume.yaml
+```
+This will output your resume files to `$(pwd)/output`
+
 Examples
 ----
 * [Original YAML](example.yaml)
@@ -15,15 +28,6 @@ Examples
 
 Screenshot
 ![](output/example.png)
-
-Prequisites
-----
-* [Docker](https://docs.docker.com/install/)
-
-Run
-----
-* Make sure your data file is named `resume.yaml`, in the project's root folder (use `example.yaml` as a starting point).
-* Generate the resume by executing `docker run --rm -v $(pwd):/app -w /app celfring/resume-generator -resume=resume.yaml`.
 
 License
 ----
