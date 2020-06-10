@@ -17,7 +17,7 @@ resume: resume.yaml
 		-v `pwd`:/go/src/github.com/caitlin615/resume-generator \
 		-w /go/src/github.com/caitlin615/resume-generator \
 		--entrypoint go \
-		resume-generator go run main.go -resume=$(FIRST_DEPENDENCY)
+		resume-generator run main.go -resume=$(FIRST_DEPENDENCY)
 
 clean:
 	rm -rf output/resume*
@@ -28,3 +28,10 @@ example: example.yaml
 		-w /go/src/github.com/caitlin615/resume-generator \
 		--entrypoint go \
 		resume-generator run main.go -resume=$(FIRST_DEPENDENCY)
+
+shell:
+	@docker run --rm -it \
+		-v `pwd`:/go/src/github.com/caitlin615/resume-generator \
+		-w /go/src/github.com/caitlin615/resume-generator \
+		--entrypoint bash \
+		resume-generator
