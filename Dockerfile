@@ -16,8 +16,12 @@ ENV CHROME_BINARY_PATH /usr/bin/chromium
 ENV TEMPLATE_ROOT /go/src/github.com/caitlin615/resume-generator/templates
 
 WORKDIR /go/src/github.com/caitlin615/resume-generator
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
 COPY . ./
-RUN go get -v ./... && go install
+RUN go install
 
 WORKDIR /
 
