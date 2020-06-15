@@ -19,4 +19,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: celfring/resume-generator
         tags: latest
-        push: ${{ github.event == 'push' }}
+        push: ${{ github.event_name == 'push' }}
